@@ -118,13 +118,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 
 						// Staleness filter: ignore events older than 15 minutes without recent occurrence
 						cutoff := time.Now().Add(-15 * time.Minute)
-						lastTime := k8sEvent.CreationTimestamp.Time
-						if !k8sEvent.EventTime.IsZero() {
-							lastTime = k8sEvent.EventTime.Time
-						}
-						if k8sEvent.Series != nil && !k8sEvent.Series.LastObservedTime.IsZero() {
-							lastTime = k8sEvent.Series.LastObservedTime.Time
-						}
+						lastTime := eventOccurrenceTime(k8sEvent)
 						if lastTime.Before(cutoff) {
 							w.logger.V(1).Info("Ignoring stale event (>15m)",
 								"namespace", k8sEvent.Namespace,
@@ -209,11 +203,8 @@ func (w *Watcher) mapKubernetesEvent(k8sEvent *eventsv1.Event) *interfaces.Event
 		return nil
 	}
 
-	// Get timestamp - prefer eventTime, fall back to creationTimestamp
-	timestamp := k8sEvent.CreationTimestamp.Time
-	if !k8sEvent.EventTime.IsZero() {
-		timestamp = k8sEvent.EventTime.Time
-	}
+	// Use the latest occurrence time so aggregated events retain their recency.
+	timestamp := eventOccurrenceTime(k8sEvent)
 
 	// Handle deprecated fields for backward compatibility
 	count := "1"
@@ -247,6 +238,23 @@ func (w *Watcher) mapKubernetesEvent(k8sEvent *eventsv1.Event) *interfaces.Event
 		"note", k8sEvent.Note)
 
 	return event
+}
+
+// eventOccurrenceTime returns the newest timestamp available for an event.
+// Kubernetes may aggregate repeated events and update deprecatedLastTimestamp
+// without populating EventTime or Series.LastObservedTime.
+func eventOccurrenceTime(k8sEvent *eventsv1.Event) time.Time {
+	latest := k8sEvent.CreationTimestamp.Time
+	if !k8sEvent.EventTime.IsZero() && k8sEvent.EventTime.Time.After(latest) {
+		latest = k8sEvent.EventTime.Time
+	}
+	if k8sEvent.Series != nil && k8sEvent.Series.LastObservedTime.Time.After(latest) {
+		latest = k8sEvent.Series.LastObservedTime.Time
+	}
+	if k8sEvent.DeprecatedLastTimestamp.Time.After(latest) {
+		latest = k8sEvent.DeprecatedLastTimestamp.Time
+	}
+	return latest
 }
 
 // mapEventType maps Kubernetes event reasons to our event types
@@ -332,7 +340,7 @@ func (w *Watcher) mapNodeEventType(k8sEvent *eventsv1.Event) string {
 	// Node not ready events
 	case reason == "nodenotready":
 		return "node-not-ready"
-		
+
 	default:
 		// Log unknown node events for future enhancement
 		w.logger.V(1).Info("Unknown node event", "reason", reason, "type", eventType, "message", message)

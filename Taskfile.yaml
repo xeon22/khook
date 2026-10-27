@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  default:
+    desc: List local development tasks
+    cmds:
+      - task --list
+
+  publish:
+    desc: Build and publish a versioned amd64 image to Docker Hub
+    env:
+      IMAGE_TAG: '{{.IMAGE_TAG | default ""}}'
+    preconditions:
+      - sh: command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1 && docker buildx version >/dev/null 2>&1
+        msg: Start Docker Desktop and make sure Buildx is available.
+    cmds:
+      - |
+          set -eu
+          if [ -z "$IMAGE_TAG" ]; then
+            echo "Set IMAGE_TAG, e.g. task publish IMAGE_TAG=event-occurrence-fix-20261027" >&2
+            exit 2
+          fi
+          if ! printf '%s' "$IMAGE_TAG" | grep -Eq '^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$'; then
+            echo "IMAGE_TAG contains invalid characters" >&2
+            exit 2
+          fi
+          docker buildx build \
+            --platform linux/amd64 \
+            --push \
+            --build-arg "VERSION=$IMAGE_TAG" \
+            --label org.opencontainers.image.source=https://github.com/xeon22/khook \
+            --tag "xeon22/khook:$IMAGE_TAG" \
+            .
+
+  build:
+    desc: Compile all KHooK packages
+    cmds:
+      - go build ./...
+
+  test:
+    desc: Run the Go test suite
+    cmds:
+      - go test ./...
+
+  test:events:
+    desc: Run the Kubernetes event watcher tests
+    cmds:
+      - go test ./internal/event
+
+  run:
+    desc: Run KHooK locally against the current kube context
+    preconditions:
+      - sh: test -n "${KAGENT_API_URL:-}"
+        msg: Set KAGENT_API_URL to the reachable Kagent API endpoint before running KHooK.
+      - sh: kubectl config current-context >/dev/null 2>&1
+        msg: Configure kubectl with the cluster KHooK should watch.
+    cmds:
+      - go run ./cmd/main.go --leader-elect=false
+    env:
+      KAGENT_API_URL: http://kagent-controller.kagent.svc.milton.local:8083
