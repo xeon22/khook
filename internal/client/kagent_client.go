@@ -187,12 +187,13 @@ func (c *Client) CallAgent(ctx context.Context, request interfaces.AgentRequest)
 	defer cancel()
 
 	sessionID := sessionResp.Data.ID
+	message := protocol.NewMessage(
+		protocol.MessageRoleUser,
+		[]protocol.Part{protocol.NewTextPart(text)},
+	)
+	message.ContextID = &sessionID
 	res, err := a2a.SendMessage(sendCtx, protocol.SendMessageParams{
-		Message: protocol.Message{
-			Role:      protocol.MessageRoleUser,
-			ContextID: &sessionID,
-			Parts:     []protocol.Part{protocol.NewTextPart(text)},
-		},
+		Message: message,
 	})
 	if err != nil {
 		c.logger.Error(err, "Failed to send message to agent",
