@@ -14,7 +14,7 @@ leaderElection:
   resourceNamespace: kagent
 kagent:
   apiUrl: "https://api.kagent.dev"
-  timeout: "30s"
+  timeout: "10m"
   retryAttempts: 3
   retryBackoff: "1s"
 logging:

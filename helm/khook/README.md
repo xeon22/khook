@@ -43,7 +43,7 @@ The following table lists the configurable parameters and their default values:
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `kagent.apiUrl` | Kagent API URL | `http://kagent-controller.kagent.svc.cluster.local:8083` |
 | `kagent.userId` | User identity for requests | `admin@kagent.dev` |
-| `kagent.timeout` | API request timeout | `30s` |
+| `kagent.timeout` | Kagent session and A2A request timeout | `10m` |
 | `kagent.retryAttempts` | Number of retry attempts | `3` |
 | `controller.logLevel` | Log level (debug, info, warn, error) | `info` |
 | `controller.logFormat` | Log format (json, text) | `json` |

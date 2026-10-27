@@ -48,6 +48,11 @@ spec:
             configMapKeyRef:
               name: {{ include "khook.fullname" . }}-config
               key: kagent-user-id
+        - name: KAGENT_API_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "khook.fullname" . }}-config
+              key: api-timeout
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:

@@ -63,7 +63,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		Kagent: KagentConfig{
 			BaseURL:       "https://api.kagent.dev",
-			Timeout:       30 * time.Second,
+			Timeout:       10 * time.Minute,
 			RetryAttempts: 3,
 		},
 		Controller: ControllerConfig{

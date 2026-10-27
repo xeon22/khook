@@ -31,7 +31,7 @@ func TestNewClient(t *testing.T) {
 		client := NewClient(nil, logger)
 		assert.Equal(t, "http://kagent-controller.kagent.svc.local:8083", client.config.BaseURL)
 		assert.Equal(t, "admin@kagent.dev", client.config.UserID)
-		assert.Equal(t, 120*time.Second, client.config.Timeout)
+		assert.Equal(t, 600*time.Second, client.config.Timeout)
 	})
 }
 
@@ -113,5 +113,5 @@ func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
 	assert.Equal(t, "http://kagent-controller.kagent.svc.local:8083", config.BaseURL)
 	assert.Equal(t, "admin@kagent.dev", config.UserID)
-	assert.Equal(t, 120*time.Second, config.Timeout)
+	assert.Equal(t, 600*time.Second, config.Timeout)
 }

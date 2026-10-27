@@ -40,7 +40,7 @@ func TestNewClientFromEnv(t *testing.T) {
 		// Should use defaults for all values
 		assert.Equal(t, "http://kagent-controller.kagent.svc.local:8083", client.config.BaseURL)
 		assert.Equal(t, "admin@kagent.dev", client.config.UserID)
-		assert.Equal(t, 120*time.Second, client.config.Timeout)
+		assert.Equal(t, 600*time.Second, client.config.Timeout)
 	})
 
 	t.Run("with legacy environment variable", func(t *testing.T) {

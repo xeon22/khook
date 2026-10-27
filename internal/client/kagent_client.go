@@ -70,8 +70,8 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("Timeout must be positive, got %v", c.Timeout)
 	}
 
-	if c.Timeout > 300*time.Second {
-		return fmt.Errorf("Timeout too long: %v (max 300s)", c.Timeout)
+	if c.Timeout > 600*time.Second {
+		return fmt.Errorf("Timeout too long: %v (max 600s)", c.Timeout)
 	}
 
 	return nil
@@ -82,7 +82,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BaseURL: "http://kagent-controller.kagent.svc.local:8083",
 		UserID:  "admin@kagent.dev",
-		Timeout: 120 * time.Second,
+		Timeout: 600 * time.Second,
 	}
 }
 
@@ -178,7 +178,7 @@ func (c *Client) CallAgent(ctx context.Context, request interfaces.AgentRequest)
 
 	// Use A2A SendMessage (POST). Provide a clean base URL with trailing slash; no query params.
 	a2aURL := fmt.Sprintf("%s/api/a2a/%s/", c.config.BaseURL, request.AgentRef.String())
-	a2a, err := a2aclient.NewA2AClient(a2aURL)
+	a2a, err := a2aclient.NewA2AClient(a2aURL, a2aclient.WithTimeout(c.config.Timeout))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create A2A client: %w", err)
 	}

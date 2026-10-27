@@ -83,7 +83,7 @@ if err != nil {
 
 - `KAGENT_API_BASE_URL`: Base URL for the Kagent API (default: "https://api.kagent.dev")
 - `KAGENT_USER_ID`: User ID for API requests (default: "hook-controller")
-- `KAGENT_API_TIMEOUT`: Request timeout duration (default: "30s")
+- `KAGENT_API_TIMEOUT`: Request timeout duration (default: "10m", maximum: "10m")
 
 ## API Integration
 

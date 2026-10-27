@@ -201,7 +201,7 @@ spec:
 The controller implements retry logic for failed API calls:
 - **Max Attempts**: 3 (configurable via `retryAttempts`)
 - **Backoff**: Exponential backoff starting at 1 second (configurable via `retryBackoff`)
-- **Timeout**: 120 seconds per request (configurable via `timeout`)
+- **Timeout**: 10 minutes per A2A request by default (configurable via `KAGENT_API_TIMEOUT`, up to 10 minutes)
 
 ### Error Types
 
